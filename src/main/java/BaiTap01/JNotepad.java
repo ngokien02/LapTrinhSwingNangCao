@@ -2,12 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.advancedgui;
+package BaiTap01;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+
 /**
  *
  * @author Admin
@@ -16,12 +17,16 @@ public class JNotepad extends JFrame {
 
     private JMenuBar menuBar;
     private JMenu mFile, mEdit, mFormat, mView, mHelp;
-    private JMenuItem itemNew, itemOpen, itemSave, itemSaveAs, itemPageSetup, itemPrint, itemExit;
+    private JMenuItem itemNew, itemOpen, itemSave, itemSaveAs, itemPageSetup, itemPrint, itemExit,
+            itemCopy, itemPaste;
     private JMenuItem itemFont;
     private JCheckBoxMenuItem itemWrap;
     private JTextArea txtEditor;
     private JToolBar toolBar;
     private JButton btnNew, btnOpen, btnSave;
+    private JFontDialog fontdlg;
+    private String path;
+    JFileChooser fc;
 
     public JNotepad(String title) {
         super(title);
@@ -51,6 +56,9 @@ public class JNotepad extends JFrame {
         mFile.add(itemPrint = new JMenuItem("Print..."));
         mFile.add(new JSeparator());
         mFile.add(itemExit = new JMenuItem("Exit"));
+        
+        mEdit.add(itemCopy = new JMenuItem("Copy"));
+        mEdit.add(itemPaste = new JMenuItem("Paste"));
 
         mFormat.add(itemWrap = new JCheckBoxMenuItem("Word warp", true));
         mFormat.add(itemFont = new JMenuItem("Font..."));
@@ -61,6 +69,8 @@ public class JNotepad extends JFrame {
         itemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
         itemPrint.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
         itemExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
+        itemCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
+        itemPaste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
 
         setJMenuBar(menuBar);
 
@@ -79,7 +89,7 @@ public class JNotepad extends JFrame {
         toolBar.add(btnNew = new JButton("New"));
         toolBar.add(btnOpen = new JButton("Open"));
         toolBar.add(btnSave = new JButton("Save"));
-                                                
+
         add(toolBar, BorderLayout.NORTH);
     }
 
@@ -100,24 +110,40 @@ public class JNotepad extends JFrame {
             openFile();
         });
 
+        itemSave.addActionListener((e) -> {
+            save();
+        });
+
         itemSaveAs.addActionListener((e) -> {
             saveAs();
         });
-        
+
         itemNew.addActionListener((e) -> {
-            txtEditor.setText("");
+            itemNew();
         });
-        
+
+        itemFont.addActionListener((e) -> {
+            fontdlg = new JFontDialog(this, true);
+            fontdlg.setVisible(true);
+        });
+
+        itemExit.addActionListener((e) -> {
+            if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn thoát?") == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
+
     }
 
     private void openFile() {
-        JFileChooser fc = new JFileChooser("D:/");
+        fc = new JFileChooser("D:/");
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 FileInputStream fis = new FileInputStream(fc.getSelectedFile());
                 byte[] b = new byte[fis.available()];
                 fis.read(b);
                 txtEditor.setText(new String(b));
+                path = String.valueOf(fc.getSelectedFile());
                 fis.close();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file");
@@ -136,6 +162,39 @@ public class JNotepad extends JFrame {
                 JOptionPane.showMessageDialog(this, "Lỗi ghi file");
             }
         }
+    }
+
+    private void itemNew() {
+        if (!txtEditor.getText().trim().isEmpty()) {
+            int result = JOptionPane.showConfirmDialog(null, "Bạn có muốn lưu văn bản hiện tại?",
+                    "Xác nhận lưu", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (result == JOptionPane.YES_OPTION) {
+                saveAs();
+            } else if (result == JOptionPane.NO_OPTION) {
+                txtEditor.setText("");
+                txtEditor.setCaretPosition(0);
+            }
+        } else {
+            txtEditor.setCaretPosition(0);
+        }
+    }
+
+    private void save() {
+        if (path == null) {
+            saveAs();
+        } else {
+            try {
+                FileOutputStream fos = new FileOutputStream(path);
+                fos.write(txtEditor.getText().getBytes());
+                fos.close();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi ghi file");
+            }
+        }
+    }
+
+    public JTextArea getTxtEditor() {
+        return txtEditor;
     }
 
 }
