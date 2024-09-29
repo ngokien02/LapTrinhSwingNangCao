@@ -56,7 +56,7 @@ public class DemoJTable extends JFrame {
         p.add(txtGia = new JTextField(10));
         p.add(btnThem = new JButton("Thêm"));
         p.add(btnXoa = new JButton("Xóa"));
-
+        
         add(scrollTable, BorderLayout.CENTER);
         add(p, BorderLayout.NORTH);
     }
